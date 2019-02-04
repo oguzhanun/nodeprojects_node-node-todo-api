@@ -2,10 +2,14 @@ const expect = require('expect')
 const supertest = require('supertest')
 const {app} = require('../server/server.js')
 const {TodoModel} = require('../models/todos') 
+const {ObjectID} = require('mongodb');
+
 
 const todos = [{
+    _id : new ObjectID(),
     text : "the first one for test"
 }, {
+    _id : new ObjectID(),
     text : "the second one for test"
 }];
 
@@ -65,4 +69,26 @@ describe('GET /todos', () => {
             expect(res.body.todos.length).toBe(2);
         }).end(done);
     })
-})
+});
+
+describe('GET /todos/:id', () => {
+    it('should return the first todo', (done) =>{
+        
+        // id değeri 24 byte lık bir hexadecimal değer olduğundan bu şekilde string dönüşümü yapılıyor.
+        supertest(app).get(`/todos/${todos[0]._id.toHexString()}`).expect(200)
+            .expect((res)=>{
+                //console.log(res);
+                expect(res.body.todo.text).toBe(todos[0].text);
+            })
+            .end(done);
+    })
+
+    it('should test if it fails when given a non-existing ID', (done) => {
+        supertest(app).get(`/todos/5c582c4b34227606f9c1725c`).expect(400).end(done);
+    })
+
+
+    it('should test if it fails when given a non-existing ID', (done) => {
+        supertest(app).get(`/todos/123`).expect(400).end(done);
+    })
+});
