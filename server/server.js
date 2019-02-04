@@ -8,6 +8,12 @@ var app = express();
 
 app.use(bodyParser.json());
 
+app.get('/todos', (req, res) =>{
+    TodoModel.find().then((todos) => {
+        res.send({todos});
+    })
+})
+
 app.post('/todos', (req,res) => {
     
     console.log(req.body)

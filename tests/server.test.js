@@ -3,10 +3,18 @@ const supertest = require('supertest')
 const {app} = require('../server/server.js')
 const {TodoModel} = require('../models/todos') 
 
+const todos = [{
+    text : "the first one for test"
+}, {
+    text : "the second one for test"
+}];
+
 beforeEach((done)=>{
     // remove deprecate olmuş onun yerine deleteOne veya deleteMany kullanmak gerekiyor...
     TodoModel.remove().then(() => {
-        done()
+        return TodoModel.insertMany(todos)
+    }).then(()=>{
+        done();
     })
 })
 
@@ -18,7 +26,7 @@ describe('/todos test :', () => {
 
         supertest(app)
             .post('/todos')
-            .send({text : text})
+            .send({text})
             .expect(200)
             .expect((res) => {
                 expect(res.body.text).toBe(text)
@@ -26,7 +34,7 @@ describe('/todos test :', () => {
                 if(err){
                     return done(err)
                 }
-                TodoModel.find().then((todos) => {
+                TodoModel.find({text}).then((todos) => {
                     expect(todos.length).toBe(1)
                     expect(todos[0].text).toBe(text)
                     done();
@@ -42,11 +50,19 @@ describe('/todos test :', () => {
                 return done(err);
             }
             TodoModel.find().then((todos) => {
-                expect(todos.length).toBe(0);
+                expect(todos.length).toBe(2);
                 done();
             }).catch((e)=> {
                 done(e);
             })
         })
+    })
+})
+
+describe('GET /todos', () => {
+    it('should test if all todos come', (done) => {
+        supertest(app).get('/todos').expect(200).expect((res)=>{
+            expect(res.body.todos.length).toBe(2);
+        }).end(done);
     })
 })
