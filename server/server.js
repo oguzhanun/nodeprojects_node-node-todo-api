@@ -16,9 +16,7 @@ app.get('/', (req, res) => {
 app.get('/todos', (req, res) =>{
     TodoModel.find().then((todos) => {
         res.send({todos});
-    }).catch((err) => {
-        console.log(err);
-    })
+    });
 })
 
 var port = process.env.PORT || 8000;
