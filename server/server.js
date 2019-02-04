@@ -8,11 +8,18 @@ var app = express();
 
 app.use(bodyParser.json());
 
+app.get('/', (req, res) => {
+    res.send("<h1>Welcome To My Experimental Site !!!</h1>" +
+    "<p>For CRUD Operations use /todos route...</p>");
+})
+
 app.get('/todos', (req, res) =>{
     TodoModel.find().then((todos) => {
         res.send({todos});
     })
 })
+
+var port = process.env.PORT || 8000;
 
 app.get('/todos/:id', (req, res) => {
     
@@ -80,8 +87,8 @@ app.post('/users', (req, res) => {
 //     }
 // })
 
-app.listen(8000, () => {
-    console.log("server is up and running on port 8000")
+app.listen(port, () => {
+    console.log(`server is up and running on port ${port}`)
 })
 
 module.exports = {app}
