@@ -1,37 +1,42 @@
-const TodoModel = require('../models/todos').TodoModel
-const UserModel = require('../models/users').UserModel
+const {TodoModel} = require('../models/todos');
+const {UserModel} = require('../models/users');
 
-const express = require('express')
-const bodyParser = require('body-parser')
+const express = require('express');
+const bodyParser = require('body-parser');
 
-var app = express()
+var app = express();
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 app.post('/todos', (req,res) => {
+    
     console.log(req.body)
+
     var todo = new TodoModel({
         text : req.body.text
-    })
+    });
 
     todo.save().then((doc)=> {
-        res.send(doc)
+        res.send(doc);
     }, (error) => {
-        res.send(error)
-    })
+        res.status(400).send(error);
+    });
 })
 
 app.post('/users', (req, res) => {
-    console.log(req.body)
+    
+    console.log(req.body);
+
     var user = new UserModel({
         email : req.body.email
     })
 
     user.save().then((doc) => {
-        res.send(doc)
+        res.send(doc);
+        
     }, (error) => {
-        res.send(error)
-    })
+        res.status(400).send(error);
+    });
 })
 
 // mongoose içerisinde built-in bir promise olmadığında  başka bir frameworkten ya da 
@@ -51,9 +56,12 @@ app.post('/users', (req, res) => {
 //     }
 // })
 
-app.listen(3000, () => {
-    console.log("server is up and running on port 3000")
+app.listen(8000, () => {
+    console.log("server is up and running on port 8000")
 })
+
+module.exports = {app}
+
 
 // var user = new User({
 //     email : 'oguzhanun@hotmail.com'
