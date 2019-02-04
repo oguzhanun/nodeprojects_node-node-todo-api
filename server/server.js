@@ -1,6 +1,6 @@
 const {TodoModel} = require('../models/todos');
 const {UserModel} = require('../models/users');
-
+const {ObjectID} = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -11,6 +11,24 @@ app.use(bodyParser.json());
 app.get('/todos', (req, res) =>{
     TodoModel.find().then((todos) => {
         res.send({todos});
+    })
+})
+
+app.get('/todos/:id', (req, res) => {
+    
+    var id = req.params.id;
+    
+    if(!ObjectID.isValid(id)){
+        return res.status(400).send();
+    }
+
+    TodoModel.findById(id).then((todo)=> {
+        if(!todo){
+           return res.status(400).send();
+        }
+        res.send({todo});
+    }).catch((e)=> {
+        res.status(400).send();
     })
 })
 
