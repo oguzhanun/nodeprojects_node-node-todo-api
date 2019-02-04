@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
-mongoose.connect(process.env.MONGOLAB_URI || "mongodb://localhost:27017/TodoApp",{ useNewUrlParser: true }).then(()=>{
-    console.log("Connected to Database...")   
-});
+mongoose.connect(process.env.MONGOLAB_URI || "mongodb://localhost:27017/TodoApp",{ useNewUrlParser: true });
+// .then(()=>{
+//     console.log("Connected to Database...")   
+// });
 
 module.exports = {mongoose};
