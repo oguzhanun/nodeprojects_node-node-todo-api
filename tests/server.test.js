@@ -9,10 +9,10 @@ const todos = [{
     _id : new ObjectID(),
     text : "the first one for test"
 }
-// , {
-//     _id : new ObjectID(),
-//     text : "the second one for test"
-// }
+, {
+    _id : new ObjectID(),
+    text : "the second one for test"
+}
 ];
 
 beforeEach((done)=>{
@@ -56,7 +56,7 @@ describe('/todos test :', () => {
                 return done(err);
             }
             TodoModel.find().then((todos) => {
-                expect(todos.length).toBe(1);
+                expect(todos.length).toBe(2);
                 done();
             }).catch((e)=> {
                 done(e);
@@ -68,7 +68,7 @@ describe('/todos test :', () => {
 describe('GET /todos', () => {
     it('should test if all todos come', (done) => {
         supertest(app).get('/todos').expect(200).expect((res)=>{
-            expect(res.body.todos.length).toBe(1);
+            expect(res.body.todos.length).toBe(2);
         }).end(done);
     })
 });
@@ -102,7 +102,7 @@ describe ('DELETE /todos/:id', ()=>{
         
         supertest(app).delete(`/todos/${hexId}`)
             .expect(200).expect((res)=>{
-                console.log(res.body);
+                //console.log(res.body);
                 expect(res.body.doc._id).toBe(hexId);
             })
             .end((err,res)=>{
@@ -125,5 +125,40 @@ describe ('DELETE /todos/:id', ()=>{
 
     it('should test if it fails when given a non-existing ID', (done) => {
         supertest(app).delete(`/todos/123`).expect(400).end(done);
+    })
+})
+
+describe('PATCH /todos/:id', ()=>{
+
+    it('should update the todo', (done)=>{
+        
+        var id = todos[0]._id.toHexString();
+        var todo = {
+            text :'text for test purposes',
+            completed : true
+        }
+        supertest(app).patch(`/todos/${id}`).send(todo).expect(200).expect((res)=>{
+            //console.log(res.body);
+            expect(res.body.todo.text).toBe('text for test purposes');
+            expect(res.body.todo.completed).toBe(true);
+            expect(res.body.todo.completedAt).toBeA('number');
+            
+        },(err)=>{
+            done(err);
+        }).end(done)
+    })
+
+    it('should clear completedAt when todo is not completed', (done)=>{
+        
+        var id = todos[1]._id.toHexString();
+
+        supertest(app).patch(`/todos/${id}`).send({text:'this is for a test', completed:false})
+            .expect(200).expect((res)=>{
+                expect(res.body.todo.text).toBe('this is for a test');
+                expect(res.body.todo.completed).toBe(false);
+                expect(res.body.todo.completedAt).toNotExist();
+            },(err)=>{
+                done(err);
+            }).end(done);
     })
 })
