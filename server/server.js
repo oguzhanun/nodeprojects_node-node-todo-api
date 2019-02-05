@@ -5,7 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 var app = express();
-
+var port = process.env.PORT || 8000;
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
@@ -19,7 +19,23 @@ app.get('/todos', (req, res) =>{
     });
 })
 
-var port = process.env.PORT || 8000;
+app.delete('/todos/:id', (req,res)=>{
+    
+    var id = req.params.id;
+    console.log(id);
+    
+    if(ObjectID.isValid('id')){
+        return res.status(404).send()
+    }
+    TodoModel.findByIdAndDelete(id).then((doc)=>{
+        if(!doc){
+            return res.status(404).send();
+        }
+        return res.status(200).send({doc});
+    }, (err)=>{
+        res.status(400).send();
+    })
+})
 
 app.get('/todos/:id', (req, res) => {
     
