@@ -8,10 +8,12 @@ const {ObjectID} = require('mongodb');
 const todos = [{
     _id : new ObjectID(),
     text : "the first one for test"
-}, {
-    _id : new ObjectID(),
-    text : "the second one for test"
-}];
+}
+// , {
+//     _id : new ObjectID(),
+//     text : "the second one for test"
+// }
+];
 
 beforeEach((done)=>{
     // remove deprecate olmuş onun yerine deleteOne veya deleteMany kullanmak gerekiyor...
@@ -54,7 +56,7 @@ describe('/todos test :', () => {
                 return done(err);
             }
             TodoModel.find().then((todos) => {
-                expect(todos.length).toBe(2);
+                expect(todos.length).toBe(1);
                 done();
             }).catch((e)=> {
                 done(e);
@@ -66,7 +68,7 @@ describe('/todos test :', () => {
 describe('GET /todos', () => {
     it('should test if all todos come', (done) => {
         supertest(app).get('/todos').expect(200).expect((res)=>{
-            expect(res.body.todos.length).toBe(2);
+            expect(res.body.todos.length).toBe(1);
         }).end(done);
     })
 });
@@ -92,3 +94,36 @@ describe('GET /todos/:id', () => {
         supertest(app).get(`/todos/123`).expect(400).end(done);
     })
 });
+
+describe ('DELETE /todos/:id', ()=>{
+    it('should remove a todo', (done)=>{
+
+        var hexId = todos[0]._id.toHexString();
+        
+        supertest(app).delete(`/todos/${hexId}`)
+            .expect(200).expect((res)=>{
+                console.log(res.body);
+                expect(res.body.doc._id).toBe(hexId);
+            })
+            .end((err,res)=>{
+                if(err){
+                    return done(err);
+                }
+                TodoModel.findById(hexId).then((res)=>{
+                    expect(res).toNotExist();
+                    return done();
+                }, (err)=>{
+                    done(err);
+                })
+            })
+    })
+
+    it('should test if it fails when given a non-existing ID', (done) => {
+        supertest(app).delete(`/todos/5c582c4b34227606f9c1725c`).expect(404).end(done);
+    })
+
+
+    it('should test if it fails when given a non-existing ID', (done) => {
+        supertest(app).delete(`/todos/123`).expect(400).end(done);
+    })
+})
