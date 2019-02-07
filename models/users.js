@@ -40,13 +40,33 @@ UserSchema.methods.toJSON = function(){
 }
 
 UserSchema.methods.generateAuthToken = function() {
+
+    // instance method 
     var user = this;
+
     access = 'auth';
-    token = jwt.sign({id : user._id.toHexString(), access}, '123abc');
+    token = jwt.sign({"id" : user._id.toHexString(), access}, '123abc').toString();
     user.tokens = user.tokens.concat([{access,token}]);
     
     return user.save().then(()=>{
         return token;
+    });
+}
+
+UserSchema.statics.findByToken = function(token){
+    console.log(token);
+    var User = this;
+    var decoded ; 
+    try {
+        decoded = jwt.verify(token,'123abc')
+        console.log('decoded :' , JSON.stringify(decoded));
+    } catch(e){
+        return Promise.reject();
+    }
+    return User.findOne({
+        '_id':decoded.id,
+        'tokens.token':token,
+        'tokens.access':'auth'
     });
 }
 

@@ -1,5 +1,6 @@
 require('../config/config.js');
 
+const {authenticate} = require('../middleware/authenticate.js');
 const {TodoModel} = require('../models/todos');
 const {UserModel} = require('../models/users');
 const {ObjectID} = require('mongodb');
@@ -57,6 +58,10 @@ app.get('/todos/:id', (req, res) => {
     }).catch((e)=> {
         res.status(400).send();
     })
+})
+
+app.get('/users/me', authenticate, (req,res)=>{
+    res.send(req.user);
 })
 
 app.post('/todos', (req,res) => {
