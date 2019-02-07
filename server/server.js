@@ -77,16 +77,20 @@ app.post('/todos', (req,res) => {
 app.post('/users', (req, res) => {
     
     console.log(req.body);
+    var body = _.pick(req.body, ['email','password']);
+    var user = new UserModel(body);
 
-    var user = new UserModel({
-        email : req.body.email
-    })
+    user.save().then((user) => {
 
-    user.save().then((doc) => {
-        res.send(doc);
-        
+        return user.generateAuthToken();
+
     }, (error) => {
+
         res.status(400).send(error);
+
+    }).then((token)=>{
+
+        res.header('x-auth', token).send(user);
     });
 })
 
