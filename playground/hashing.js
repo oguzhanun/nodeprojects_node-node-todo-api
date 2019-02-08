@@ -1,5 +1,6 @@
 const {SHA256} = require('crypto-js');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 var data = {
     id : 4
@@ -7,11 +8,11 @@ var data = {
 
 // sign ile data yı kodluyoruz. verify ile kodu açıyoruz. ikinci parametre ile kodu saltluyoruz...
 var token = jwt.sign(data,'123abc');
-console.log(token);
+console.log('token : ',token);
 
 
 var decoded = jwt.verify(token, '123abc');
-console.log(decoded);
+console.log('decoded : ',decoded);
 
 // token = {
 //     data,
@@ -21,3 +22,19 @@ console.log(decoded);
 // console.log('data', JSON.stringify(data));
 // console.log('token', token.hash);
 
+
+var password = '123abc';
+bcrypt.genSalt(3, (err,salt)=>{
+    bcrypt.hash(password,salt,(err,hash)=>{
+        if(err){
+            console.log('[error] :',err)
+        }
+        console.log('[hash] :',hash);
+        console.log('[comparing result] :');
+        bcrypt.compare(password,hash,(err,success)=>{
+            if(!err){
+                console.log('[success]:',success);
+            }
+        });
+    })
+})
