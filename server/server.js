@@ -11,6 +11,7 @@ const _ = require('lodash');
 var app = express();
 
 var port = process.env.PORT;
+
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
@@ -66,7 +67,7 @@ app.get('/users/me', authenticate, (req,res)=>{
 
 app.post('/todos', (req,res) => {
     
-    console.log(req.body)
+    console.log('request body : ',req.body)
 
     var todo = new TodoModel({
         text : req.body.text
@@ -96,6 +97,8 @@ app.post('/users', (req, res) => {
     }).then((token)=>{
 
         res.header('x-auth', token).send(user);
+    }).catch((err)=>{
+        res.status(400).send();
     });
 })
 

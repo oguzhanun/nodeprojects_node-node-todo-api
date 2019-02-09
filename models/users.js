@@ -85,7 +85,7 @@ UserSchema.statics.findByToken = function(token){
     });
 }
 
-var UserModel = mongoose.model('UserModel', UserSchema) 
+var UserModel = mongoose.model('UserModel', UserSchema);
 
 module.exports = {
     UserModel
