@@ -7,6 +7,8 @@ const {ObjectID} = require('mongodb');
 const express = require('express');
 const bodyParser = require('body-parser');
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
+
 
 var app = express();
 
@@ -126,6 +128,24 @@ app.patch('/todos/:id', (req, res)=>{
     })
 })
 
+app.post('/users/login', (req, res)=>{
+    var credentials = _.pick(req.body, ['email','password']);
+    UserModel.findOne({email : credentials.email}).then((user)=>{
+        console.log('email bulundu.')
+        if(user){
+            bcrypt.compare(credentials.password,user.password,).then((result)=>{
+                if(result){
+                    console.log('token:',user.tokens[0].token)
+                    res.header('x-auth',user.tokens[0].token).send(user);
+                }
+            }).catch((err)=>{
+                console.log(err);
+            });
+        }
+    }).catch((err)=>{
+        console.log(err);
+    })
+})
 
 // mongoose içerisinde built-in bir promise olmadığında  başka bir frameworkten ya da 
 // global üzerinden Promise ını sağlıyor... Promise olmasada .then methodunun olduğunu da dokümanlarda 
