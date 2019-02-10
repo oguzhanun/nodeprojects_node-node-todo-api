@@ -13,7 +13,7 @@ const users = [{
     tokens : [{
         access : 'auth',
         // .sign metodu id den başka bir şeyi kabul etmiyor. hataya sebep oluyor testte
-        token : jwt.sign({id:id1 , access:'auth'},'123abc')
+        token : jwt.sign({id:id1 , access:'auth'}, process.env.JWT_SECRET)
         }]
     },
     {
@@ -23,7 +23,7 @@ const users = [{
         tokens : [{
             access : 'auth',
             // .sign metodu id den başka bir şeyi kabul etmiyor. hataya sebep oluyor testte
-            token : jwt.sign({id:id2 , access:'auth'},'123abc')
+            token : jwt.sign({id:id2 , access:'auth'}, process.env.JWT_SECRET)
             }]
     }
 ]
