@@ -12,7 +12,8 @@ const users = [{
     password : 'userOnePass',
     tokens : [{
         access : 'auth',
-        token : jwt.sign({id : id1 , access:'auth'},'123abc')
+        // .sign metodu id den başka bir şeyi kabul etmiyor. hataya sebep oluyor testte
+        token : jwt.sign({id:id1 , access:'auth'},'123abc')
         }]
     },
     {

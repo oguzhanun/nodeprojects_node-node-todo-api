@@ -11,7 +11,7 @@ var authenticate = (req, res, next) =>{
             // catch e düşer...
             return Promise.reject('no user could be found')
         }
-
+        console.log('authentication')
         req.user = user;
         req.token = token;
         next();

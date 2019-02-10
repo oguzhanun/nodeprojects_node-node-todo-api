@@ -133,7 +133,7 @@ app.post('/users/login', (req, res)=>{
     UserModel.findOne({email : credentials.email}).then((user)=>{
         console.log('email bulundu.')
         if(user){
-            bcrypt.compare(credentials.password,user.password,).then((result)=>{
+            bcrypt.compare(credentials.password, user.password).then((result)=>{
                 if(result){
                     console.log('token:',user.tokens[0].token)
                     res.header('x-auth',user.tokens[0].token).send(user);
@@ -144,6 +144,16 @@ app.post('/users/login', (req, res)=>{
         }
     }).catch((err)=>{
         console.log(err);
+    })
+})
+
+app.delete('/users/me/token', authenticate, (req, res)=>{
+    console.log('authenticate geçti...')
+    req.user.removeToken(req.token).then((result)=>{
+        console.log('silindi...')
+        res.send('Your registration is removed.');
+    }, ()=>{
+        res.send('no such token is found or there happened an error.');
     })
 })
 
