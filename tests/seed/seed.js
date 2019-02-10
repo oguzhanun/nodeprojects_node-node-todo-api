@@ -19,17 +19,24 @@ const users = [{
     {
         _id : id2,
         email : 'oguzhan12@hotmail.com',
-        password : 'userTwoPass'
+        password : 'userTwoPass',
+        tokens : [{
+            access : 'auth',
+            // .sign metodu id den başka bir şeyi kabul etmiyor. hataya sebep oluyor testte
+            token : jwt.sign({id:id2 , access:'auth'},'123abc')
+            }]
     }
 ]
 
 const todos = [{
     _id : new ObjectID(),
-    text : "the first one for test"
+    text : "the first one for test",
+    _creator : id1
 }
 , {
     _id : new ObjectID(),
-    text : "the second one for test"
+    text : "the second one for test",
+    _creator : id2
 }];
 
 const populateUsers = (done) => {

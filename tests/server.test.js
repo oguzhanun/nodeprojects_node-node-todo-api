@@ -38,6 +38,7 @@ describe('/todos test :', () => {
 
         supertest(app)
             .post('/todos')
+            .set('x-auth',users[0].tokens[0].token)
             .send({text})
             .expect(200)
             .expect((res) => {
@@ -57,7 +58,9 @@ describe('/todos test :', () => {
     })
 
     it('should not create a todo with an invalid data', (done) => {
-        supertest(app).post('/todos').send({}).expect(400).end((err, res) => {
+        supertest(app).post('/todos')
+            .set('x-auth',users[0].tokens[0].token)
+            .send({}).expect(400).end((err, res) => {
             if(err){
                 return done(err);
             }
@@ -73,8 +76,12 @@ describe('/todos test :', () => {
 
 describe('GET /todos', () => {
     it('should test if all todos come', (done) => {
-        supertest(app).get('/todos').expect(200).expect((res)=>{
-            expect(res.body.todos.length).toBe(2);
+        supertest(app)
+            .get('/todos')
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(200)
+            .expect((res)=>{
+            expect(res.body.todos.length).toBe(1);
         }).end(done);
     })
 });
@@ -83,7 +90,9 @@ describe('GET /todos/:id', () => {
     it('should return the first todo', (done) =>{
         
         // id değeri 24 byte lık bir hexadecimal değer olduğundan bu şekilde string dönüşümü yapılıyor.
-        supertest(app).get(`/todos/${todos[0]._id.toHexString()}`).expect(200)
+        supertest(app).get(`/todos/${todos[0]._id.toHexString()}`)
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(200)
             .expect((res)=>{
                 //console.log(res);
                 expect(res.body.todo.text).toBe(todos[0].text);
@@ -91,13 +100,30 @@ describe('GET /todos/:id', () => {
             .end(done);
     })
 
+    it('should not return someone elses todos', (done) =>{
+        
+        // id değeri 24 byte lık bir hexadecimal değer olduğundan bu şekilde string dönüşümü yapılıyor.
+        supertest(app).get(`/todos/${todos[1]._id.toHexString()}`)
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(400)
+            .end(done);
+    })
+
     it('should test if it fails when given a non-existing ID', (done) => {
-        supertest(app).get(`/todos/5c582c4b34227606f9c1725c`).expect(400).end(done);
+        supertest(app)
+            .get(`/todos/5c582c4b34227606f9c1725c`)
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(400)
+            .end(done);
     })
 
 
     it('should test if it fails when given a non-existing ID', (done) => {
-        supertest(app).get(`/todos/123`).expect(400).end(done);
+        supertest(app)
+            .get(`/todos/123`)
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(400)
+            .end(done);
     })
 });
 
@@ -106,7 +132,9 @@ describe ('DELETE /todos/:id', ()=>{
 
         var hexId = todos[0]._id.toHexString();
         
-        supertest(app).delete(`/todos/${hexId}`)
+        supertest(app)
+            .delete(`/todos/${hexId}`)
+            .set('x-auth',users[0].tokens[0].token)
             .expect(200).expect((res)=>{
                 //console.log(res.body);
                 expect(res.body.doc._id).toBe(hexId);
@@ -124,13 +152,42 @@ describe ('DELETE /todos/:id', ()=>{
             })
     })
 
+    it('should not remove a todo', (done)=>{
+
+        var hexId = todos[1]._id.toHexString();
+        
+        supertest(app)
+            .delete(`/todos/${hexId}`)
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(404)
+            .end((err,res)=>{
+                if(err){
+                    return done(err);
+                }
+                TodoModel.findById(hexId).then((res)=>{
+                    expect(res).toExist();
+                    return done();
+                }, (err)=>{
+                    done(err);
+                })
+            })
+    })
+
     it('should test if it fails when given a non-existing ID', (done) => {
-        supertest(app).delete(`/todos/5c582c4b34227606f9c1725c`).expect(404).end(done);
+        supertest(app)
+            .delete(`/todos/5c582c4b34227606f9c1725c`)
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(404)
+            .end(done);
     })
 
 
     it('should test if it fails when given a non-existing ID', (done) => {
-        supertest(app).delete(`/todos/123`).expect(400).end(done);
+        supertest(app)
+        .delete(`/todos/123`)
+        .set('x-auth',users[0].tokens[0].token)
+        .expect(400)
+        .end(done);
     })
 })
 
@@ -143,7 +200,12 @@ describe('PATCH /todos/:id', ()=>{
             text :'text for test purposes',
             completed : true
         }
-        supertest(app).patch(`/todos/${id}`).send(todo).expect(200).expect((res)=>{
+        supertest(app)
+            .patch(`/todos/${id}`)
+            .send(todo)
+            .set('x-auth',users[0].tokens[0].token)
+            .expect(200)
+            .expect((res)=>{
             //console.log(res.body);
             expect(res.body.todo.text).toBe('text for test purposes');
             expect(res.body.todo.completed).toBe(true);
@@ -154,12 +216,29 @@ describe('PATCH /todos/:id', ()=>{
         }).end(done)
     })
 
+    it('should not update the todo', (done)=>{
+        
+        var id = todos[0]._id.toHexString();
+        var todo = {
+            text :'text for test purposes',
+            completed : true
+        }
+        supertest(app)
+            .patch(`/todos/${id}`)
+            .send(todo)
+            .set('x-auth',users[1].tokens[0].token)
+            .expect(404)
+            .end(done)
+    })
+
     it('should clear completedAt when todo is not completed', (done)=>{
         
         var id = todos[1]._id.toHexString();
 
         supertest(app).patch(`/todos/${id}`).send({text:'this is for a test', completed:false})
-            .expect(200).expect((res)=>{
+            .set('x-auth',users[1].tokens[0].token)
+            .expect(200)
+            .expect((res)=>{
                 expect(res.body.todo.text).toBe('this is for a test');
                 expect(res.body.todo.completed).toBe(false);
                 expect(res.body.todo.completedAt).toNotExist();
@@ -273,7 +352,7 @@ describe('POST /users/login', ()=>{
                 return done(err);
             }
             UserModel.findById(users[1]._id).then((user)=>{
-                expect(user.tokens[0].length).toBe(0);
+                expect(user.tokens[0].length).toBe(1);
                 done();
             }).catch((e)=>{
                 done(e);
