@@ -144,7 +144,7 @@ describe ('DELETE /todos/:id', ()=>{
                     return done(err);
                 }
                 TodoModel.findById(hexId).then((res)=>{
-                    expect(res).toNotExist();
+                    expect(res).toBeFalsy();
                     return done();
                 }, (err)=>{
                     done(err);
@@ -165,7 +165,7 @@ describe ('DELETE /todos/:id', ()=>{
                     return done(err);
                 }
                 TodoModel.findById(hexId).then((res)=>{
-                    expect(res).toExist();
+                    expect(res).toBeTruthy();
                     return done();
                 }, (err)=>{
                     done(err);
@@ -209,7 +209,7 @@ describe('PATCH /todos/:id', ()=>{
             //console.log(res.body);
             expect(res.body.todo.text).toBe('text for test purposes');
             expect(res.body.todo.completed).toBe(true);
-            expect(res.body.todo.completedAt).toBeA('number');
+            expect(typeof res.body.todo.completedAt).toBe('number');
             
         },(err)=>{
             done(err);
@@ -241,7 +241,7 @@ describe('PATCH /todos/:id', ()=>{
             .expect((res)=>{
                 expect(res.body.todo.text).toBe('this is for a test');
                 expect(res.body.todo.completed).toBe(false);
-                expect(res.body.todo.completedAt).toNotExist();
+                expect(res.body.todo.completedAt).toBeFalsy();
             },(err)=>{
                 done(err);
             }).end(done);
@@ -275,16 +275,16 @@ describe('POST /users :', ()=>{
         const email = 'jenifer@lopez.com';
         const password = '123kaj' 
         supertest(app).post('/users').send({email, password}).expect(200).expect((res)=>{
-            expect(res.body._id).toExist();
+            expect(res.body._id).toBeTruthy();
             expect(res.body.email).toBe(email);
-            expect(res.headers['x-auth']).toExist();
+            expect(res.headers['x-auth']).toBeTruthy();
         }).end((err)=>{
             if(err){
                 done(err);
             }
             UserModel.findOne({email}).then((user)=>{
-                expect(user).toExist();
-                expect(user.password).toNotEqual(password);
+                expect(user).toBeTruthy();
+                expect(user.password).not.toBe(password);
                 done();
             }).catch(err=>{
                 done(err);
@@ -297,7 +297,11 @@ describe('POST /users :', ()=>{
         const email = 'jenifer@lopez.com';
         const password = '123ka';
 
-        supertest(app).post('/users').send({email, password}).expect(400).expect((res)=>{
+        supertest(app)
+            .post('/users')
+            .send({email, password})
+            .expect(400)
+            .expect((res)=>{
             //console.log(res.body._message);
             expect(res.body._message).toBe('UserModel validation failed');
         }).end(done)
@@ -306,8 +310,10 @@ describe('POST /users :', ()=>{
 
     it('should not create user', (done) => {
         
-        supertest(app).post('/users').send({email:users[0].email, password:users[0].password}).expect(400)
-        .end(done);
+        supertest(app).post('/users')
+            .send({email:users[0].email, password:users[0].password})
+            .expect(400)
+            .end(done);
     });
 });
 
@@ -320,14 +326,14 @@ describe('POST /users/login', ()=>{
             })
             .expect(200)
             .expect((res)=>{
-                expect(res.headers['x-auth']).toExist();
+                expect(res.headers['x-auth']).toBeTruthy();
             })
             .end((err,res)=>{
                 if(err){
                     return done(err);
                 }
                 UserModel.findById(users[0]._id).then((user)=>{
-                    expect(user.tokens[0]).toInclude({
+                    expect(user.tokens[0]).toMatchObject({    //toInclude() un karşılığı olarak gelen fonksiyon
                         access:'auth',
                         token : res.headers['x-auth']
                     });
@@ -345,7 +351,7 @@ describe('POST /users/login', ()=>{
         })
         .expect(400)
         .expect((res)=>{
-            expect(res.headers['x-auth']).toNotExist();
+            expect(res.headers['x-auth']).toBeFalsy();  // yalnız burası için toNotExist() sorun çıkarmıyor...???????? İLGİNÇ ??????
         })
         .end((err,res)=>{
             if(err){
